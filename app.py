@@ -27,7 +27,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello():
-    return "Hello, Welcome to my Flask Test App!"
+    return "Hello, Welcome to my Flask Test App!", 200
 
 @app.route('/about', methods=['GET'])
 def about():

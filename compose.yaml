@@ -1,13 +1,27 @@
 ---
 name: my-test-app
 services:
+  nginx:
+    image: nginx:1.26-alpine
+    ports:
+      - 8080:8080
+    configs:
+      - source: nginx_config
+        target:  /etc/nginx/nginx.conf # Mount nginx config to a /etc/nginx 
+    networks:
+      - public
+    depends_on:
+      flask:
+        condition: service_healthy
+        restart: true
+
   flask:
     image: admin4neo/flask:latest
     build:
       context: .
       dockerfile: Dockerfile.dev
-    ports:
-      - 7070:8080
+    # ports:
+    #   - 7070:8080
     env_file:
       - dev.env
 
@@ -36,13 +50,22 @@ services:
       - flask-data:/data
       - ./../flask-01:/app # Bind mount my app directory
     networks:
-      - private 
+      - public # for NGINX
+      - private # for PostgreSQL
+    depends_on: # Does not check if container if running/ postgress is healthy
+      - postgres
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
   postgres:
     image: postgres:16.3
     # Optionally - all ports are accessible in the network
-    ports:
-      - 5432:5432
+    # ports:
+    #   - 5432:5432
     environment:
       POSTGRES_USER: admin
       POSTGRES_DB:  mydb
@@ -63,6 +86,8 @@ secrets:
 configs:
   my_config:
     file: config-dev.yaml
+  nginx_config:
+    file: nginx.conf
 
 volumes:
   flask-data:
@@ -70,6 +95,7 @@ volumes:
 
 # For communication between Flask applications(containers) and python 
 networks:
+  public:
   private:
     driver: bridge
     ipam:
