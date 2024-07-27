@@ -5,7 +5,7 @@ services:
     image: admin4neo/flask:latest
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     ports:
       - 7070:8080
     env_file:
@@ -24,11 +24,14 @@ services:
       - APP_VERSION=0.1.0
       - DB_PASSWORD=${DB_PASSWORD}
       - APP_TOKEN=${APP_TOKEN}
+      - FLASK_DEBUG=1 # For running flask in the debug mode for any changes to be synced to the container
+      - FLASK_APP=app.py # flask entry point
 
     volumes:
       - ./config-dev.yaml:/config-dev.yaml
       # - ./my-data:/data # bind mount my-data folder from my local machine to data folder on root
       - flask-data:/data
+      - ./../flask-01:/app # Bind mount my app directory
     
 secrets:
   api_key:

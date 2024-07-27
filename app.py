@@ -3,10 +3,14 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
+@app.route('/')
+def hello():
+    return "Hello, Welcome to my Flask Test App!"
+
 @app.route('/about', methods=['GET'])
 def about():
     version = os.getenv('APP_VERSION', 'unknown')
-    return {'version': version}, 200
+    return {'app_version': version}, 200
 
 @app.route('/secret', methods=['GET'])
 def secret():
