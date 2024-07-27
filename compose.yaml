@@ -32,10 +32,30 @@ services:
       # - ./my-data:/data # bind mount my-data folder from my local machine to data folder on root
       - flask-data:/data
       - ./../flask-01:/app # Bind mount my app directory
+    networks:
+      - private 
+
+  postgres:
+    image: postgres:16.3
+    # Optionally - all ports are accessible in the network
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_DB:  mydb
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_pass
+    secrets:
+      - postgres_pass # Pass our secret for password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - private # Placed database to private network
     
 secrets:
   api_key:
     file: api_key.txt
+  postgres_pass:
+    file: postgress_pass.txt
 
 configs:
   my_config:
@@ -43,3 +63,13 @@ configs:
 
 volumes:
   flask-data:
+  postgres-data:
+
+# For communication between Flask applications(containers) and python 
+networks:
+  private:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "10.0.0.0/19"
+          gateway: "10.0.0.1"
