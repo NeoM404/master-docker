@@ -1,7 +1,30 @@
 import os
 from flask import Flask, request
+from psycopg_pool import ConnectionPool
 
 app = Flask(__name__)
+
+def dbConnect():
+    """Create a connection pool to connect to Postgres"""
+    db_host = os.getenv('DB_HOST')
+    db_database = os.getenv('DB_DATABASE')
+    db_user = os.getenv('DB_USER')
+    db_password = os.getenv('DB_PASSWORD')
+
+    # Create a connection string/URL for the database
+    db_url = f'host = {db_host} dbname = {db_database} user = {
+        db_user} password = {db_password}'
+    # db_url = f"postgresql://{db_user}:{db_password}@{db_host}/{db_database}"
+
+    # Connect to Postgres database
+    conn_pool = ConnectionPool(db_url)
+    conn_pool.wait()
+
+    return conn_pool
+
+# Create a connection pool to Postgres
+pool = dbConnect()
+
 
 @app.route('/')
 def hello():
