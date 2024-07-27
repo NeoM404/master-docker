@@ -1,0 +1,42 @@
+---
+name: my-test-app
+services:
+  flask:
+    image: admin4neo/flask:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 7070:8080
+    env_file:
+      - dev.env
+
+    secrets:
+      - api_key
+      - source: api_key
+        target: /api_key.txt # copy secret file to a specific folder
+
+    configs:
+      - source: my_config
+        target: /config-dev-v2.yaml
+
+    environment:
+      - APP_VERSION=0.1.0
+      - DB_PASSWORD=${DB_PASSWORD}
+      - APP_TOKEN=${APP_TOKEN}
+
+    volumes:
+      - ./config-dev.yaml:/config-dev.yaml
+      # - ./my-data:/data # bind mount my-data folder from my local machine to data folder on root
+      - flask-data:/data
+    
+secrets:
+  api_key:
+    file: api_key.txt
+
+configs:
+  my_config:
+    file: config-dev.yaml
+
+volumes:
+  flask-data:
